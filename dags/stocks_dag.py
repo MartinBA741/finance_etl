@@ -4,7 +4,7 @@ from airflow import DAG
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators import (StageToRedshiftOperator, LoadFactOperator,
                                 LoadDimensionOperator, DataQualityOperator)
-import SqlQueries
+from helpers import SqlQueries
 
 import configparser
 config = configparser.ConfigParser()
@@ -12,11 +12,11 @@ config = configparser.ConfigParser()
 AWS_KEY = config['AWS']['ID']
 AWS_SECRET = config['AWS']['KEY']
 
-default_args = {'owner': 'udacity',
+default_args = {'owner': 'Martin_Birk_Andreasen',
                 'Depends_on_past': False,
                 'wait_for_downstream': True,
-                'start_date': datetime(2019, 1, 12),
-                'end_date': datetime(2021, 1, 12),
+                'start_date': datetime(2022, 1, 6),
+                'end_date': datetime(2022, 31, 12),
                 'max_active_runs': 1,
                 'email_on_failure': False,
                 'email_on_retry': False,
@@ -27,7 +27,7 @@ default_args = {'owner': 'udacity',
 
 dims_load_type = 'append'
 
-dag = DAG('data_pipeline_dag',
+dag = DAG('stock_data_pipeline',
             catchup=False,
             default_args=default_args,
             description='Load and transform data in Redshift with Airflow',
