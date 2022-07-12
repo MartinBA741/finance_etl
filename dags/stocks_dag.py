@@ -17,7 +17,7 @@ AWS_KEY = config['AWS']['ID']
 AWS_SECRET = config['AWS']['KEY']
 
 default_args = {'owner': 'Martin_Birk_Andreasen',
-                'email': ['ma-bi-an@hotmail.com.com'],
+                'email': ['ma-bi-an@hotmail.com'],
                 'depends_on_past': False,
                 'wait_for_downstream': True,
                 'start_date': datetime(2022, 1, 6),
@@ -63,16 +63,6 @@ load_hist_table = LoadFactOperator(
     table="hist",
     column_list=['playid', 'start_time', 'userid', 'level', 'songid', 'artistid', 'sessionid', 'location', 'user_agent'],
     select_sql=SqlQueries.hist_table_insert ,
-    dag=dag
-)
-
-load_time_dimension_table = LoadDimensionOperator(
-    task_id='Load_time_dim_table',
-    redshift_conn_id="redshift",
-    table="time",
-    column_list=['start_time', 'hour', 'day', 'week', 'month','year','weekday'],
-    select_sql=SqlQueries.time_table_insert,
-    truncate_insert=True,
     dag=dag
 )
 

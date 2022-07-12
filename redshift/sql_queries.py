@@ -90,7 +90,6 @@ staging_DimCorp_copy = (f"""
 
 
 # FINAL TABLES
-
 FactHist_insert = ("""
     INSERT INTO FactHist (
         Ticker,
