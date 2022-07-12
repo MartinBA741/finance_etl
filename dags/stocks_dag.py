@@ -10,6 +10,8 @@ from airflow.plugins.helpers import SqlQueries
 import configparser
 
 config = configparser.ConfigParser()
+config.read('config.ini') #dwh.cfg
+
 
 AWS_KEY = config['AWS']['ID']
 AWS_SECRET = config['AWS']['KEY']

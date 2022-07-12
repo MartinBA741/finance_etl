@@ -23,7 +23,8 @@ def main():
     """Extract raw data to staging tables. Transform and load data to fact and dimensions tables."""
 
     config = configparser.ConfigParser()
-    config.read('dwh.cfg')
+    
+    config.read('config.ini') #dwh.cfg
 
     print('config read! - now connecting...')
     conn = psycopg2.connect("host={} dbname={} user={} password={} port={}".format(*config['CLUSTER'].values()))

@@ -20,7 +20,7 @@ def create_tables(cur, conn):
 def main():
     """Drop existing tables and creates new tables."""
     config = configparser.ConfigParser()
-    config.read('dwh.cfg')
+    config.read('config.ini') #dwh.cfg
 
     print('config file read! - now connecting...')
     conn = psycopg2.connect("host={} dbname={} user={} password={} port={}".format(*config['CLUSTER'].values()))

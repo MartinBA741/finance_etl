@@ -2,12 +2,11 @@ import configparser
 
 # CONFIG
 config = configparser.ConfigParser()
-config.read('dwh.cfg')
+config.read('config.ini') #dwh.cfg
 
-#S3_LOG_JSONPATH = config.get('S3','LOG_JSONPATH')
-#S3_SONG_DATA = config.get('S3','SONG_DATA')
-S3_DimCorp_DATA = config.get('S3','DimCorp_DATA') 
-S3_HIST_DATA = config.get('S3','LOG_DATA')
+
+S3_DimCorp_DATA = config.get('S3','CorpDim_PATH') 
+S3_HIST_DATA = config.get('S3','HIST_DATA')
 IAM_ROLE_ARN = config.get('IAM_ROLE', 'ARN')
 
 #######################################################
@@ -74,8 +73,9 @@ staging_hist_copy = (f"""
         CREDENTIALS 'aws_iam_role={IAM_ROLE_ARN}'
         REGION 'us-east-1' 
         COMPUPDATE OFF
-        JSON AS 'auto'
-    """)   #JSON AS '{S3_LOG_JSONPATH}'
+        csv
+        IGNOREHEADER 1
+    """)
 
 
 # Insert data to DimCorp
@@ -84,8 +84,9 @@ staging_DimCorp_copy = (f"""
         CREDENTIALS 'aws_iam_role={IAM_ROLE_ARN}'
         REGION 'us-east-1' 
         COMPUPDATE OFF
-        JSON AS 'auto'
-    """)   #JSON AS '{S3_LOG_JSONPATH}'
+        csv
+        IGNOREHEADER 1
+    """)
 
 
 # FINAL TABLES
