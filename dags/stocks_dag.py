@@ -1,19 +1,22 @@
 from datetime import datetime, timedelta
 import os
 from airflow import DAG
-from airflow.operators.dummy_operator import DummyOperator
-from airflow.operators import (StageToRedshiftOperator, LoadFactOperator,
-                                LoadDimensionOperator, DataQualityOperator)
-from helpers import SqlQueries
+#from airflow.operators.dummy_operator import DummyOperator
+from airflow.plugins.operators import (StageToRedshiftOperator, LoadFactOperator,
+                                    LoadDimensionOperator, DataQualityOperator)
+
+from airflow.plugins.helpers import SqlQueries
 
 import configparser
+
 config = configparser.ConfigParser()
 
 AWS_KEY = config['AWS']['ID']
 AWS_SECRET = config['AWS']['KEY']
 
 default_args = {'owner': 'Martin_Birk_Andreasen',
-                'Depends_on_past': False,
+                'email': ['ma-bi-an@hotmail.com.com'],
+                'depends_on_past': False,
                 'wait_for_downstream': True,
                 'start_date': datetime(2022, 1, 6),
                 'end_date': datetime(2022, 31, 12),
@@ -24,6 +27,7 @@ default_args = {'owner': 'Martin_Birk_Andreasen',
                 'retry_delay': timedelta(minutes=5),
                 'catchup': False,
                 }
+
 
 dims_load_type = 'append'
 
@@ -39,8 +43,8 @@ start_operator = DummyOperator(task_id='Begin_execution',  dag=dag)
 
 # stage_events_to_redshift
 stage_hist_to_redshift = StageToRedshiftOperator(    
-    task_id='Stage_events',
-    table="staging_events",
+    task_id='Stage_hist',
+    table="staging_hist",
     redshift_conn_id="redshift",
     aws_credentials_id="aws_credentials",
     s3_bucket="stocks",
@@ -49,17 +53,6 @@ stage_hist_to_redshift = StageToRedshiftOperator(
     dag=dag
 )
 
-#stage_songs_to_redshift
-stage_recent_to_redshift = StageToRedshiftOperator(
-    task_id='Stage_songs',
-    table="staging_songs",
-    redshift_conn_id="redshift",
-    aws_credentials_id="aws_credentials",
-    s3_bucket="stocks",
-    s3_key="recent_data",
-    region="us-east-1",
-    dag=dag
-)
 
 # load_songplays_table
 load_hist_table = LoadFactOperator(
@@ -71,16 +64,6 @@ load_hist_table = LoadFactOperator(
     dag=dag
 )
 
-#load_user_dimension_table = LoadDimensionOperator(
-#    task_id='Load_user_dim_table',
-#    redshift_conn_id="redshift",
-#    table="users",
-#    column_list=['userid', 'first_name', 'last_name', 'gender', 'level'],
-#    select_sql=SqlQueries.user_table_insert,
-#    truncate_insert=True,
-#    dag=dag
-#)
-
 load_time_dimension_table = LoadDimensionOperator(
     task_id='Load_time_dim_table',
     redshift_conn_id="redshift",
@@ -90,7 +73,6 @@ load_time_dimension_table = LoadDimensionOperator(
     truncate_insert=True,
     dag=dag
 )
-
 
 run_quality_checks = DataQualityOperator(
     task_id='Run_data_quality_checks',
