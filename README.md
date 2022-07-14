@@ -13,7 +13,11 @@ Outline:
 How to:
 - Scripts are run from A-G before analysis can begin.
 - Run Z_kill_cluster.py when you are done with the cluster to avoid surprising AWS bills.
+
 [A-C]: Create redshift stuff
+
 [D-E]: ETL
+
 [F-G]: inspect and test data
+
 [Z]: shut down cluster 
