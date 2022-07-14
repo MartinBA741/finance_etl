@@ -4,10 +4,10 @@ import configparser
 config = configparser.ConfigParser()
 config.read('config.ini') #dwh.cfg
 
-
-S3_DimCorp_DATA = config.get('S3','CorpDim_PATH') 
 S3_HIST_DATA = config.get('S3','HIST_DATA')
+S3_DimCorp_DATA = config.get('S3','CorpDim_PATH') 
 IAM_ROLE_ARN = config.get('IAM_ROLE', 'ARN')
+
 
 #######################################################
 ################ DROP TABLES ##########################
@@ -17,51 +17,46 @@ FactHist_drop = "DROP TABLE IF EXISTS FactHist"
 DimCorp_drop = "DROP TABLE IF EXISTS DimCorp"
 
 
-
 #######################################################
 ################ CREATE TABLES ########################
 #######################################################
 
 ## Create Staging Tables: 
-
 create_staging_hist = ("""
     CREATE TABLE IF NOT EXISTS staging_hist 
     (
-        Ticker varchar(256) NOT NULL,
-        Date timestamp,
-        Open numeric(18,0),
-        High numeric(18,0),
-        Low numeric(18,0),
-        Close numeric(18,0),
-        AdjClose numeric(18,0),
-        Volume numeric(18,0),
-        PRIMARY KEY (Ticker, Date)
+        Ticker      VARCHAR(256) NOT NULL,
+        "Date"      TIMESTAMP,
+        "Open"      NUMERIC,
+        High        NUMERIC,
+        Low         NUMERIC,
+        Close       NUMERIC,
+        AdjClose    NUMERIC,
+        Volume      NUMERIC
     );
-    """)
+    """) #         PRIMARY KEY (Ticker, "Date")
 
 ## Create Fact Table
 create_FactHist = ("""
     CREATE TABLE IF NOT EXISTS FactHist 
     (
-    	Ticker varchar(256) NOT NULL,
-        Date timestamp,
-        AdjClose numeric(18,0),
-        PRIMARY KEY (Ticker, Date)
+    	Ticker      VARCHAR(256) NOT NULL,
+        "Date"      TIMESTAMP,
+        AdjClose    NUMERIC
     );
-    """)
+    """) #         PRIMARY KEY (Ticker, "Date")
 
 
 ## Create Dimension Tables
 create_DimCorp = ("""
     CREATE TABLE IF NOT EXISTS DimCorp 
     (
-    	Ticker varchar(256) NOT NULL,
-        Company varchar(256),
-        CEO varchar(256),
-        Founded timestamp,
-        PRIMARY KEY (Ticker, Date)
+    	Ticker  VARCHAR(256) NOT NULL,
+        Company VARCHAR(256),
+        CEO     VARCHAR(256),
+        Founded TIMESTAMP
     );
-    """)
+    """) # PRIMARY KEY (Ticker, "Date")
 
 #######################################################
 ################## INSERT DATA ########################
@@ -93,15 +88,15 @@ staging_DimCorp_copy = (f"""
 FactHist_insert = ("""
     INSERT INTO FactHist (
         Ticker,
-        Date,
+        "Date",
         AdjClose
     )
     SELECT 
         Ticker,
-        Date,
-        AdjClose
+        "Date",
+        AVG(AdjClose) as AdjClose
     FROM staging_hist
-    WHERE Ticker IS NOT NULL
+    GROUP BY Ticker, "Date"
 """) 
 
 #######################################################
@@ -109,5 +104,5 @@ FactHist_insert = ("""
 #######################################################
 create_table_queries = [create_staging_hist, create_FactHist, create_DimCorp]
 drop_table_queries = [staging_hist_drop, FactHist_drop, DimCorp_drop]
-copy_table_queries = [staging_hist_copy, staging_DimCorp_copy]
+copy_table_queries = [staging_DimCorp_copy, staging_hist_copy]
 insert_table_queries = [FactHist_insert]
