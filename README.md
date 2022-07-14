@@ -1,4 +1,4 @@
-# Finance_etl
+# Finance ETL
 ETL process of financial data from yahoo finance --> AWS S3 --> AWS redshift --> Ready for analysis
 
 ## Outline:
@@ -11,6 +11,9 @@ ETL process of financial data from yahoo finance --> AWS S3 --> AWS redshift -->
 - *L*oad data for analysis
 
 ## How to:
+### All you need:
+- AWS account
+### Overview
 - Scripts are run from A-G before analysis can begin.
 - Run Z_kill_cluster.py when you are done with the cluster to avoid surprising AWS bills.
 - **A-C**: Create redshift stuff
