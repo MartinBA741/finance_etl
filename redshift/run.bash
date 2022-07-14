@@ -6,5 +6,5 @@ python C_connect_to_cluster.py
 python D_create_tables.py 
 python E_etl.py
 python F_inspect.py
-
+# kill all
 python Z_kill_cluster.py

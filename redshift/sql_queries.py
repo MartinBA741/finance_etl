@@ -13,6 +13,7 @@ IAM_ROLE_ARN = config.get('IAM_ROLE', 'ARN')
 ################ DROP TABLES ##########################
 #######################################################
 staging_hist_drop = "DROP TABLE IF EXISTS staging_hist"
+staging_DimCorp_drop = "DROP TABLE IF EXISTS StagingDimCorp"
 FactHist_drop = "DROP TABLE IF EXISTS FactHist"
 DimCorp_drop = "DROP TABLE IF EXISTS DimCorp"
 
@@ -35,7 +36,17 @@ create_staging_hist = ("""
         Volume      NUMERIC
     );
     """)
-#         PRIMARY KEY (Ticker, "Date")
+
+create_staging_DimCorp = ("""
+    CREATE TABLE IF NOT EXISTS StagingDimCorp 
+    (
+    	Ticker   VARCHAR(256) NOT NULL,
+        CorpName VARCHAR(256),
+        Ceo      VARCHAR(256),
+        Founded  TIMESTAMP
+    );
+    """) 
+
 
 ## Create Fact Table
 create_FactHist = ("""
@@ -43,10 +54,7 @@ create_FactHist = ("""
     (
     	Ticker      VARCHAR(256) NOT NULL,
         "Date"      TIMESTAMP,
-        AdjClose    NUMERIC,
-        CorpName    VARCHAR(256),
-        Ceo         VARCHAR(256),
-        Founded     TIMESTAMP
+        AdjClose    NUMERIC
     );
     """) #         PRIMARY KEY (Ticker, "Date")
 
@@ -81,7 +89,7 @@ staging_hist_copy = (f"""
 
 # Insert data to DimCorp
 staging_DimCorp_copy = (f"""
-        COPY public.DimCorp FROM '{S3_DimCorp_DATA}'
+        COPY public.StagingDimCorp FROM '{S3_DimCorp_DATA}'
         CREDENTIALS 'aws_iam_role={IAM_ROLE_ARN}'
         REGION      'us-east-1' 
         DELIMITER   ','
@@ -91,19 +99,51 @@ staging_DimCorp_copy = (f"""
     """)
 
 
-# FINAL TABLES
-FactHist_insert = ("""
-    INSERT INTO FactHist (
-        Ticker,
-        "Date",
-        AdjClose,
+# FINAL FACT AND DIMENSION TABLES
+DimCorp_insert = ("""
+    INSERT INTO DimCorp (
+        Ticker, 
         CorpName,
         Ceo,
         Founded
     )
-    
     SELECT 
-        DISTINCT ON (2)
+        Ticker, 
+        CorpName,
+        Ceo,
+        Founded 
+    FROM StagingDimCorp 
+    WHERE Ticker
+        NOT IN (SELECT DISTINCT Ticker
+                FROM DimCorp)
+""") 
+
+FactHist_insert = ("""
+    INSERT INTO FactHist (
+        Ticker,
+        "Date",
+        AdjClose
+    )
+    SELECT 
+        Ticker, 
+        "Date", 
+        AVG(AdjClose) AS AdjClose 
+    FROM staging_hist 
+    WHERE (Ticker, "Date") 
+        NOT IN (SELECT DISTINCT Ticker, "Date"
+                FROM FactHist)
+    GROUP BY Ticker, "Date" 
+    ORDER BY Ticker, "Date"
+""") 
+
+
+
+#######################################################
+############### ANALYSIS QUERIES ######################
+#######################################################
+
+overview_query = ("""
+    SELECT 
         his.Ticker, 
         his."Date", 
         his.AdjClose,
@@ -111,19 +151,36 @@ FactHist_insert = ("""
         dc.Ceo,
         dc.Founded
     
-    FROM staging_hist AS his
-    
+    FROM (
+        SELECT 
+            Ticker, 
+            "Date", 
+            AVG(AdjClose) AS AdjClose 
+        FROM FactHist 
+        GROUP BY Ticker, "Date" 
+        ) AS his
+
     LEFT JOIN DimCorp AS dc
         ON his.Ticker=dc.Ticker
 
-
     ORDER BY his.Ticker, his."Date"
-""") 
+    """)
+
+pct_query = ("""
+    SELECT 
+        Ticker, 
+        "Date", 
+        AdjClose,
+        ((AdjClose / lag(AdjClose, 1) OVER (PARTITION BY Ticker ORDER BY ["Date"])) - 1)*100 AS daily_return
+    FROM FactHist
+    ORDER BY Ticker, Date;
+    """)
+
 
 #######################################################
 ################## QUERY LISTS ########################
 #######################################################
-create_table_queries = [create_staging_hist, create_FactHist, create_DimCorp]
-drop_table_queries = [staging_hist_drop, FactHist_drop, DimCorp_drop]
+create_table_queries = [create_staging_hist, create_staging_DimCorp, create_FactHist, create_DimCorp]
+drop_table_queries = [staging_hist_drop, staging_DimCorp_drop, FactHist_drop, DimCorp_drop]
 copy_table_queries = [staging_hist_copy, staging_DimCorp_copy]
-insert_table_queries = [FactHist_insert]
+insert_table_queries = [FactHist_insert, DimCorp_insert]

@@ -3,6 +3,7 @@ import psycopg2
 import configparser
 import pandas as pd
 import warnings
+import sql_queries
 
 warnings.filterwarnings('ignore')
 
@@ -38,7 +39,7 @@ cur.execute(query_show_tables)
 lst_tables = []
 for table in cur.fetchall():
     lst_tables.append(table[0])
-    print(table)
+    #print(table)
 
 
 def query_top(N=5, table='FactHist'):
@@ -54,26 +55,23 @@ def count_tables():
     lst_count = []
 
     for _table in lst_tables:
-        lst_count.append(cur.execute(f"""
-            SELECT COUNT(1) 
-            FROM {_table}
-            """))
-
-    df_count = pd.DataFrame() 
-
-    for _table in lst_tables:
-        df_count = df_count.append(pd.read_sql_query(f"""
-            SELECT COUNT(1) 
-            FROM {_table}
-            """, con=conn))
-    print(df_count)
-
+        cur.execute(f"""SELECT COUNT(1) FROM {_table}""")
+        print(_table, cur.fetchall())
 
 def main():
+    print('\n No. obs in tables: ')
+    count_tables()
+
     for tbl in lst_tables:
         print('\n Table: ', tbl)
         query_top(N=5, table=tbl)
-    count_tables()
+    print('\n \n ------ Tables for analysis ------ \n \n')
+    df = pd.read_sql_query(sql_queries.overview_query, con=conn)
+    print('\n Overview table | join fact and dim: \n', df.head())
+
+    df = pd.read_sql_query(sql_queries.pct_query, con=conn)
+    print('\n Daily return table in % | join fact and dim: \n', df.head())
+
     cur.close()
 
 
