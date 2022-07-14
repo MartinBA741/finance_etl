@@ -34,7 +34,8 @@ create_staging_hist = ("""
         AdjClose    NUMERIC,
         Volume      NUMERIC
     );
-    """) #         PRIMARY KEY (Ticker, "Date")
+    """)
+#         PRIMARY KEY (Ticker, "Date")
 
 ## Create Fact Table
 create_FactHist = ("""
@@ -42,7 +43,10 @@ create_FactHist = ("""
     (
     	Ticker      VARCHAR(256) NOT NULL,
         "Date"      TIMESTAMP,
-        AdjClose    NUMERIC
+        AdjClose    NUMERIC,
+        CorpName    VARCHAR(256),
+        Ceo         VARCHAR(256),
+        Founded     TIMESTAMP
     );
     """) #         PRIMARY KEY (Ticker, "Date")
 
@@ -51,10 +55,10 @@ create_FactHist = ("""
 create_DimCorp = ("""
     CREATE TABLE IF NOT EXISTS DimCorp 
     (
-    	Ticker  VARCHAR(256) NOT NULL,
-        Company VARCHAR(256),
-        CEO     VARCHAR(256),
-        Founded TIMESTAMP
+    	Ticker   VARCHAR(256) NOT NULL,
+        CorpName VARCHAR(256),
+        Ceo      VARCHAR(256),
+        Founded  TIMESTAMP
     );
     """) # PRIMARY KEY (Ticker, "Date")
 
@@ -64,21 +68,24 @@ create_DimCorp = ("""
 
 # Insert data to staging hist
 staging_hist_copy = (f"""
-        COPY staging_hist FROM '{S3_HIST_DATA}'
+        COPY public.staging_hist FROM '{S3_HIST_DATA}'
         CREDENTIALS 'aws_iam_role={IAM_ROLE_ARN}'
-        REGION 'us-east-1' 
-        COMPUPDATE OFF
+        REGION      'us-east-1' 
+        DELIMITER   ','
+        EMPTYASNULL
         csv
         IGNOREHEADER 1
     """)
+    #COMPUPDATE OFF
 
 
 # Insert data to DimCorp
 staging_DimCorp_copy = (f"""
-        COPY DimCorp FROM '{S3_DimCorp_DATA}'
+        COPY public.DimCorp FROM '{S3_DimCorp_DATA}'
         CREDENTIALS 'aws_iam_role={IAM_ROLE_ARN}'
-        REGION 'us-east-1' 
-        COMPUPDATE OFF
+        REGION      'us-east-1' 
+        DELIMITER   ','
+        EMPTYASNULL
         csv
         IGNOREHEADER 1
     """)
@@ -89,14 +96,28 @@ FactHist_insert = ("""
     INSERT INTO FactHist (
         Ticker,
         "Date",
-        AdjClose
+        AdjClose,
+        CorpName,
+        Ceo,
+        Founded
     )
+    
     SELECT 
-        Ticker,
-        "Date",
-        AVG(AdjClose) as AdjClose
-    FROM staging_hist
-    GROUP BY Ticker, "Date"
+        DISTINCT ON (2)
+        his.Ticker, 
+        his."Date", 
+        his.AdjClose,
+        dc.CorpName,
+        dc.Ceo,
+        dc.Founded
+    
+    FROM staging_hist AS his
+    
+    LEFT JOIN DimCorp AS dc
+        ON his.Ticker=dc.Ticker
+
+
+    ORDER BY his.Ticker, his."Date"
 """) 
 
 #######################################################
@@ -104,5 +125,5 @@ FactHist_insert = ("""
 #######################################################
 create_table_queries = [create_staging_hist, create_FactHist, create_DimCorp]
 drop_table_queries = [staging_hist_drop, FactHist_drop, DimCorp_drop]
-copy_table_queries = [staging_DimCorp_copy, staging_hist_copy]
+copy_table_queries = [staging_hist_copy, staging_DimCorp_copy]
 insert_table_queries = [FactHist_insert]

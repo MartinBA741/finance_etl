@@ -2,6 +2,9 @@ import boto3
 import psycopg2
 import configparser
 import pandas as pd
+import warnings
+
+warnings.filterwarnings('ignore')
 
 config = configparser.ConfigParser()
 config.read_file(open(r'config.ini'))
@@ -39,8 +42,10 @@ for table in cur.fetchall():
 
 
 def query_top(N=5, table='FactHist'):
-    topN = f""" SELECT * FROM {table} LIMIT {N}"""
+    topN = f""" SELECT * FROM {table} LIMIT {N}  """  # ORDER BY Ticker 
     #cur.execute(topN)
+    #for table in cur.fetchall():
+    #    print(table)
     df = pd.read_sql_query(topN, con=conn)
     print(df)
 
@@ -65,8 +70,10 @@ def count_tables():
 
 
 def main():
-    query_top(N=5, table='FactHist')
-    #count_tables()
+    for tbl in lst_tables:
+        print('\n Table: ', tbl)
+        query_top(N=5, table=tbl)
+    count_tables()
     cur.close()
 
 
