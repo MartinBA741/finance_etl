@@ -1,7 +1,7 @@
 # Finance_etl
 ETL process of financial data from yahoo finance --> AWS S3 --> AWS redshift --> Ready for analysis
 
-Outline:
+## Outline:
 - Data is downloaded from yahoo finance and uploaded to a data lake on AWS S3
 - Create: IAM Role and Redshifter cluster
 - Create PostgreSQL tables
@@ -10,14 +10,27 @@ Outline:
 - Test tables are correct
 - *L*oad data for analysis
 
-How to:
+## How to:
 - Scripts are run from A-G before analysis can begin.
 - Run Z_kill_cluster.py when you are done with the cluster to avoid surprising AWS bills.
+- **A-C**: Create redshift stuff
+- **D-E**: ETL
+- **F-G**: inspect and test data
+- **Z**: shut down cluster 
 
-[A-C]: Create redshift stuff
+## Data Warehouse Design
 
-[D-E]: ETL
+### Dimension tabel: DimCorp
 
-[F-G]: inspect and test data
+| Ticker | CorpName | CEO       | Founded    |
+|--------|----------|-----------|------------|
+| TSLA   | Tesla    | Elon Musk | 2003-07-01 |
+| AAPL   | Apple    | Tim Cook  | 1976-04-01 |
 
-[Z]: shut down cluster 
+
+### Fact tabel: FactHist (sample)
+
+| ticker | date       | adjclose |
+|--------|------------|----------|
+| TSLA   | 2022-05-25 | 658.0    |
+| AAPL   | 2022-04-29 | 157.0    |
