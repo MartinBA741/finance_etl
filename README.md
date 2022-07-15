@@ -13,9 +13,13 @@ ETL process of financial data
 - *L*oad data for analysis
 
 ## How to:
-### All you need:
+
+#### All you need:
 - AWS account
-### Overview
+- Python + libraries
+
+#### Overview
+- Check out the Redshift folder containing all scripts
 - Scripts are run from A-G before analysis can begin.
 - Run Z_kill_cluster.py when you are done with the cluster to avoid surprising AWS bills.
 - **A-C**: Create redshift stuff
@@ -25,7 +29,7 @@ ETL process of financial data
 
 ## Data Warehouse Design
 
-### Dimension tabel: DimCorp
+#### Dimension tabel: DimCorp
 
 | Ticker | CorpName | CEO       | Founded    |
 |--------|----------|-----------|------------|
@@ -33,7 +37,7 @@ ETL process of financial data
 | AAPL   | Apple    | Tim Cook  | 1976-04-01 |
 
 
-### Fact tabel: FactHist (sample)
+#### Fact tabel: FactHist (sample)
 
 | ticker | date       | adjclose |
 |--------|------------|----------|
