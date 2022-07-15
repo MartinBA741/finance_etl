@@ -2,7 +2,7 @@ import configparser
 import psycopg2
 import boto3
 from sql_queries import copy_table_queries, insert_table_queries
-import G_test
+import redshift.test as test
 
 
 #def connect_to_s3(KEY, SECRET):
@@ -58,8 +58,8 @@ def main():
     print('tables inserted!')
 
     print('\n ------ Test Fact and DIM tables ------')
-    G_test.EmptyTableCheck()
-    G_test.CrucialNullCheck()
+    test.EmptyTableCheck()
+    test.CrucialNullCheck()
 
     print('\nAll test passed - now closing connection...')
     conn.close()
