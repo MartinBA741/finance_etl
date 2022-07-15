@@ -4,8 +4,6 @@ import json
 import configparser
 from botocore.exceptions import ClientError
 
-print('packages installed')
-
 config = configparser.ConfigParser()
 config.read_file(open(r'config.ini'))
 
@@ -23,11 +21,11 @@ DWH_IAM_ROLE_NAME      = config.get("DWH", "DWH_IAM_ROLE_NAME")
 
 (DWH_DB_USER, DWH_DB_PASSWORD, DWH_DB)
 
-pd.DataFrame({"Param":
+print(pd.DataFrame({"Param":
                   ["DWH_CLUSTER_TYPE", "DWH_NUM_NODES", "DWH_NODE_TYPE", "DWH_CLUSTER_IDENTIFIER", "DWH_DB", "DWH_DB_USER", "DWH_DB_PASSWORD", "DWH_PORT", "DWH_IAM_ROLE_NAME"],
               "Value":
                   [DWH_CLUSTER_TYPE, DWH_NUM_NODES, DWH_NODE_TYPE, DWH_CLUSTER_IDENTIFIER, DWH_DB, DWH_DB_USER, DWH_DB_PASSWORD, DWH_PORT, DWH_IAM_ROLE_NAME]
-             })
+             }))
 ec2 = boto3.resource('ec2',
                        region_name="us-east-1",
                        aws_access_key_id=KEY,
@@ -55,7 +53,7 @@ redshift = boto3.client('redshift',
 # CREATE IAM ROLE
 #1.1 Create the role, 
 try:
-    print("1.1 Creating a new IAM Role") 
+    print("1.1 Creating a new IAM Role --> Add new ARN to config") 
     dwhRole = iam.create_role(
         Path='/',
         RoleName=DWH_IAM_ROLE_NAME,

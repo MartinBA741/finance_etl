@@ -20,11 +20,11 @@ ETL process of financial data
 
 #### Overview
 - Check out the Redshift folder containing all scripts
-- Scripts are run from A-G before analysis can begin.
+- Scripts are run from **A-D** before analysis can begin.
 - Run Z_kill_cluster.py when you are done with the cluster to avoid surprising AWS bills.
-- **A-C**: Create redshift stuff
-- **D-E**: ETL
-- **F-G**: inspect and test data
+- **A-B**: Create redshift and check status
+- **C-D**: ETL stuff (incl. test)
+- **E**: inspect and test data
 - **Z**: shut down cluster 
 
 ## Data Warehouse Design

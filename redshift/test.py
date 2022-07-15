@@ -38,7 +38,7 @@ cur = conn.cursor()
 
 
 def EmptyTableCheck():   
-    print('\n*** Data quality check for empty tables ***\n')
+    print('\n*** Data quality check for empty tables ***')
     for table in ['FactHist', 'DimCorp']:
         records = pd.read_sql_query(f"Select count(*) from {table}", con=conn)
         if len(records) < 1:
@@ -67,7 +67,7 @@ def CrucialNullCheck():
          'expected_result': 0}
         ]
     
-    print('\n*** Data quality check for Null values ***\n')
+    print('\n*** Data quality check for Null values ***')
     for check in dq_checks:
         cur.execute(check['check_sql'])
         records = cur.fetchall()[0]

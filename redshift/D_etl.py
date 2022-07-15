@@ -2,7 +2,7 @@ import configparser
 import psycopg2
 import boto3
 from sql_queries import copy_table_queries, insert_table_queries
-import redshift.test as test
+import test
 
 
 #def connect_to_s3(KEY, SECRET):
