@@ -22,7 +22,11 @@ iam = boto3.client('iam',
                      region_name='us-east-1'
                   )
 
+print('Delete cluster:')
 redshift.delete_cluster( ClusterIdentifier=DWH_CLUSTER_IDENTIFIER,  SkipFinalClusterSnapshot=True)
 
-#iam.detach_role_policy(RoleName=DWH_IAM_ROLE_NAME, PolicyArn="arn:aws:iam::aws:policy/AmazonS3FullAccess")
+print('Delete IAM Role')
+iam.detach_role_policy(RoleName=DWH_IAM_ROLE_NAME, PolicyArn="arn:aws:iam::aws:policy/AmazonS3FullAccess")
+iam.detach_role_policy(RoleName=DWH_IAM_ROLE_NAME, PolicyArn="arn:aws:iam::aws:policy/AmazonRedshiftFullAccess")
+iam.detach_role_policy(RoleName=DWH_IAM_ROLE_NAME, PolicyArn="arn:aws:iam::aws:policy/AWSCloudFormationFullAccess")
 iam.delete_role(RoleName=DWH_IAM_ROLE_NAME)
