@@ -1,5 +1,7 @@
 # Finance ETL
-ETL process of financial data from yahoo finance --> AWS S3 --> AWS redshift --> Ready for analysis
+ETL process of financial data 
+
+**yahoo finance --> AWS S3 --> AWS redshift --> Ready for analysis**
 
 ## Outline:
 - Data is downloaded from yahoo finance and uploaded to a data lake on AWS S3
